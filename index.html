@@ -1,0 +1,186 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<script src="http://code.jquery.com/jquery-latest.js" type="text/javascript"></script>
+<script type="text/javascript" src="game.js"></script>
+
+<style>
+* {
+	-webkit-appearance: none;
+	border-radius: 0px;
+}
+body {
+	font-family:Helvetica Neue, Helvetica, Arial;
+	font-weight: 200;
+}
+.response {
+	font-family:Helvetica Neue, Helvetica, Arial;
+	font-weight: 200;
+	font-size: 12px;
+	margin-top: -3px;
+	padding: 8px;
+	border: 1px solid;
+	border-color: #D4D4D4;
+	outline: none;
+	width: 300px;
+	opacity: 0.7;
+}
+.number {
+	font-family:Helvetica Neue, Helvetica, Arial;
+	font-weight: 200;
+	font-size: 18px;
+	padding: 8px;
+	border: 1px solid;
+	border-color: #D4D4D4;
+	outline: none;
+	width: 300px;
+}
+
+.submitNum {
+	-webkit-transition: all 0.30s ease-in-out;
+	-moz-transition: all 0.30s ease-in-out;
+	-ms-transition: all 0.30s ease-in-out;
+	-o-transition: all 0.30s ease-in-out;
+	
+	margin-top: -3px;
+	width:318px;
+	background-color:#4CADCB;
+	border:1px solid #02A9D6;
+	padding:8px; 
+	font-family:Helvetica Neue, Helvetica, Arial;
+	font-weight: 200;
+	font-size:18px;
+	color:#fff;
+	white-space:nowrap;
+	text-align:center;
+	outline: none;
+}
+
+.submitNum:disabled {
+	opacity: 0.5;
+}
+.submitNum:active {
+	background-color:#0370EA;
+}
+</style>
+<title>Home</title>
+</head>
+
+<body bgcolor="whitesmoke">
+<div style="font-size:24px; font-weight: 200;">PicoFermiBagel<input type="submit" value="Give Up" style="margin-left: 20px;" onclick="giveUp()" class="submitNum" />
+</div>
+<div style="font-size: 18px; font-weight: 200; margin-left: 40px;"><div id="header">A random number has been generated. Try to guess it!</div>Number of digits: <input type="text" style="border: 0px solid; background-color: transparent; border-bottom: 1px dashed;font-family:Helvetica Neue, Helvetica, Arial; font-weight: 200;font-size: 18px; outline: none; width: 50px;" value="3" onkeypress="return isNumberKey(event)" id="numOfDigits" onchange="changeNumDigits(this)" /><div id="turns">Turns: 0</div></div>
+
+<div id="guessContainer" style="margin-left: auto; margin-right: auto; width: 698px; overflow: hidden;">
+	<input type="text" class="number" onkeypress="return isNumberKey(event)" autocomplete="off" onkeyup="verifyLength(this)" style="width: 600px;" id="number"/><input onclick="submitNumber()" type="submit" id="submitNum" class="submitNum" value="Check" style="width: 80px; height: 40px; " disabled="disabled" />
+    <div id="returnValues" style="background-color: white; padding: 10px; margin-top: -2px; max-height: 500px; overflow: auto; border: 1px solid; border-color: #D4D4D4;">
+    	
+    </div>
+</div>
+
+
+<br />
+<script type="text/javascript">
+	var game = new PicoFermiBagel(3);
+
+
+function changeNumDigits(el) {
+		if(parseInt(el.value) < 10 && parseInt(el.value) > 0) {
+			game = new PicoFermiBagel(parseInt(el.value));
+			document.getElementById("returnValues").innerHTML = '<div class="responses" style="border-bottom: 1px solid; border-color: #D4D4D4; height: 0px;"><div class="responseNum" style="font-size: 35px;">Changed number of digits to: ' + el.value + '</div><div class="responseValue"> A new number has been generated</div></div>' + document.getElementById("returnValues").innerHTML;
+		
+			$(".responses:first").animate({
+				height: 70
+			}, 300, function() {});
+		}else {
+			el.value = game.numOfDigits;	
+		}
+}
+
+function giveUp() {
+	document.getElementById("returnValues").innerHTML = '<div class="responses" style="border-bottom: 1px solid; border-color: #D4D4D4; height: 0px;"><div class="responseNum" style="font-size: 35px;">Answer: ' + game.giveUp + '</div><div class="responseValue"> A new number has been generated</div></div>' + document.getElementById("returnValues").innerHTML;
+		
+		$(".responses:first").animate({
+			height: 70
+		}, 300, function() {
+    		
+  		});
+		
+	game = new PicoFermiBagel(game.numOfDigits);
+}
+
+function verifyLength(el) {
+	if(parseInt(el.value.length) == parseInt(game.numOfDigits)) {
+		document.getElementById("submitNum").disabled = false;
+		return true;
+	}else {
+		document.getElementById("submitNum").disabled = true;
+		return false;
+	}
+}
+
+function isNumberKey(evt){
+    var charCode = (evt.which) ? evt.which : event.keyCode
+	if (charCode == 13 && verifyLength(evt.target)) { submitNumber();  }
+	
+    if (charCode > 31 && (charCode < 48 || charCode > 57))
+        return false;
+    return true;
+}
+
+function submitNumber() {	
+	var status = game.checkValue(document.getElementById("number").value);
+	document.getElementById("turns").innerHTML = "Turns: " + game.turns;
+	
+	var responseString = "";
+	var allFermi = true;
+	
+	for (var i = 0; i < status.length; i++) {
+         switch(status[i]) {
+			case game.fermi:
+                 responseString += "Fermi ";
+                 break;
+            case game.pico:
+				allFermi = false;
+                 responseString += "Pico ";
+                 break;
+			case game.bagel:
+				 allFermi = false;
+				 responseString = "Bagel ";
+                 break;
+            default:
+			 	allFermi = false;
+                break;
+		 }
+	}
+
+	
+		document.getElementById("returnValues").innerHTML = '<div class="responses" style="border-bottom: 1px solid; border-color: #D4D4D4; height: 0px;"><div class="responseNum" style="font-size: 35px;">' + document.getElementById("number").value + '</div><div class="responseValue">' + responseString + '</div></div>' + document.getElementById("returnValues").innerHTML;
+		
+		$(".responses:first").animate({
+			height: 70
+		}, 300, function() {
+    		checkIfWon(allFermi, status)
+  		});
+		
+	
+}
+
+function checkIfWon(allFermi, status) {
+	if(allFermi == true && status.length == game.numOfDigits) {
+			document.getElementById("returnValues").innerHTML = '<div class="responses" style="border-bottom: 1px solid; border-color: #D4D4D4; height: 0px;"><div class="responseNum" style="font-size: 35px;">You guessed the number!</div><div class="responseValue">A new number has been generated</div></div>' + document.getElementById("returnValues").innerHTML;
+			$(".responses:first").animate({
+				height: 70
+			}, 300, function() {
+    			// Animation complete.
+  			});
+		
+			game = new PicoFermiBagel(game.numOfDigits);
+		}
+}
+
+</script>
+
+</body>
+</html>
